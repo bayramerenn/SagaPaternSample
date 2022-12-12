@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddMassTransit(configure =>
 {
-    configure.AddConsumer<StockReservedEventConsumer>();
+    configure.AddConsumer<PaymentStartedEventConsumer>();
 
     configure.UsingRabbitMq((context, cfg) =>
     {
@@ -23,9 +23,9 @@ builder.Services.AddMassTransit(configure =>
             host.Password("guest");
         });
 
-        cfg.ReceiveEndpoint(RabbitMQSettings.Payment_StockReservedEventQueue, e =>
+        cfg.ReceiveEndpoint(RabbitMQSettings.Payment_StartedEventQueue, e =>
         {
-            e.ConfigureConsumer<StockReservedEventConsumer>(context);
+            e.ConfigureConsumer<PaymentStartedEventConsumer>(context);
         });
     });
 });

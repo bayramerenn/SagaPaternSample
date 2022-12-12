@@ -8,11 +8,11 @@ namespace Shared
 {
     public static class RabbitMQSettings
     {
+        public const string StateMachine = "state-machine-queue";
         public const string Stock_OrderCreatedEventQueue = "stock-order-created-queue";
-        public const string Payment_StockReservedEventQueue = "payment-stock-reserved-queue";
-        public const string Order_PaymentCompletedEventQueue = "order-payment-completed-queue";
-        public const string Order_PaymentFailedEventQueue = "order-payment-failed-queue";
-        public const string Stock_PaymentFailedEventQueue = "stock-payment-failed-queue";
-        public const string Order_StockNotReservedEventQueue = "order-stock-not-reserved-queue";
+        public const string Payment_StartedEventQueue = "payment-started-queue";
+        public const string Order_OrderCompletedEventQueue = "order-order-completed-queue";
+        public const string Order_OrderFailedEventQueue = "order-order-failed-queue";
+        public const string Stock_RollbackMessageQueue = "stock-roolback-queue";
     }
 }

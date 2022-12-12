@@ -21,7 +21,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddMassTransit(configure =>
 {
     configure.AddConsumer<OrderCreateEventConsumer>();
-    configure.AddConsumer<PaymentFailedEventConsumer>();
+    configure.AddConsumer<StockRollbackMessageConsumer>();
 
     configure.UsingRabbitMq((context, cfg) =>
     {
@@ -36,9 +36,9 @@ builder.Services.AddMassTransit(configure =>
             e.ConfigureConsumer<OrderCreateEventConsumer>(context);
         });
 
-        cfg.ReceiveEndpoint(RabbitMQSettings.Stock_PaymentFailedEventQueue, e =>
+        cfg.ReceiveEndpoint(RabbitMQSettings.Stock_RollbackMessageQueue, e =>
         {
-            e.ConfigureConsumer<PaymentFailedEventConsumer>(context);
+            e.ConfigureConsumer<StockRollbackMessageConsumer>(context);
         });
     });
 });

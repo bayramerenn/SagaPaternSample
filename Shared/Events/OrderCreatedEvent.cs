@@ -1,17 +1,16 @@
-﻿namespace Shared.Events
-{
-    public class OrderCreatedEvent : IEvent
-    {
-        public int OrderId { get; set; }
-        public int BuyerId { get; set; }
-        public decimal TotalPrice { get; set; }
-        public List<OrderItemMessage> OrderItems { get; set; }
-    }
+﻿using MassTransit;
+using Shared.Messages;
 
-    public class OrderItemMessage
+namespace Shared.Events
+{
+    public class OrderCreatedEvent : CorrelatedBy<Guid>
     {
-        public int ProductId { get; set; }
-        public int Count { get; set; }
-        public decimal Price { get; set; }
+        public OrderCreatedEvent(Guid correlationId)
+        {
+            CorrelationId = correlationId;
+        }
+
+        public Guid CorrelationId { get; set; }
+        public List<OrderItemMessage> OrderItems { get; set; }
     }
 }

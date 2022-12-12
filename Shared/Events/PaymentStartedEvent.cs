@@ -3,14 +3,15 @@ using Shared.Messages;
 
 namespace Shared.Events
 {
-    public class StockReservedEvent : CorrelatedBy<Guid>
+    public class PaymentStartedEvent : CorrelatedBy<Guid>
     {
-        public StockReservedEvent(Guid correlationId)
+        public PaymentStartedEvent(Guid correlationId)
         {
             CorrelationId = correlationId;
         }
 
         public Guid CorrelationId { get; }
+        public decimal TotalPrice { get; set; }
         public List<OrderItemMessage> OrderItems { get; set; }
     }
 }

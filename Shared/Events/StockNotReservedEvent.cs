@@ -1,8 +1,14 @@
-﻿namespace Shared.Events
+﻿using MassTransit;
+
+namespace Shared.Events
 {
-    public class StockNotReservedEvent : IEvent
+    public class StockNotReservedEvent : CorrelatedBy<Guid>
     {
-        public int OrderId { get; set; }
+        public StockNotReservedEvent(Guid correlationId)
+        {
+            CorrelationId = correlationId;
+        }
+        public Guid CorrelationId { get; }
         public string Message { get; set; }
     }
 }

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using OrderAPI.Modes;
 using OrderAPI.Modes.Context;
 using OrderAPI.ViewModels;
+using Shared;
 using Shared.Events;
+using Shared.Messages;
 
 namespace OrderAPI.Controllers
 {
@@ -12,12 +14,12 @@ namespace OrderAPI.Controllers
     public class OrderController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly ISendEndpointProvider _sendEndpointProvider;
 
-        public OrderController(ApplicationDbContext context, IPublishEndpoint publishEndpoint)
+        public OrderController(ApplicationDbContext context, ISendEndpointProvider sendEndpointProvider)
         {
             _context = context;
-            _publishEndpoint = publishEndpoint;
+            _sendEndpointProvider = sendEndpointProvider;
         }
 
         [HttpPost]
@@ -38,10 +40,10 @@ namespace OrderAPI.Controllers
             };
 
             await _context.Orders.AddAsync(order);
-            
+
             await _context.SaveChangesAsync();
 
-            OrderCreatedEvent orderCreatedEvent = new()
+            OrderStartedEvent orderStartedEvent = new()
             {
                 OrderId = order.Id,
                 BuyerId = order.BuyerId,
@@ -54,8 +56,8 @@ namespace OrderAPI.Controllers
                 }).ToList()
             };
 
-            await _publishEndpoint.Publish(orderCreatedEvent);
-
+            ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}"));
+            await sendEndpoint.Send(orderStartedEvent);
             return Ok(true);
         }
     }

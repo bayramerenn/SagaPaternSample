@@ -1,20 +1,20 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Shared.Events;
+using Shared.Messages;
 using StockAPI.Models;
 
 namespace StockAPI.Consumers
 {
-    public class PaymentFailedEventConsumer : IConsumer<PaymentFailedEvent>
+    public class StockRollbackMessageConsumer : IConsumer<StockRollBackMessage>
     {
         private readonly ApplicationDbContext _context;
 
-        public PaymentFailedEventConsumer(ApplicationDbContext context)
+        public StockRollbackMessageConsumer(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task Consume(ConsumeContext<PaymentFailedEvent> context)
+        public async Task Consume(ConsumeContext<StockRollBackMessage> context)
         {
             foreach (var orderItem in context.Message.OrderItems)
             {
@@ -27,7 +27,6 @@ namespace StockAPI.Consumers
                 }
 
             }
-
         }
     }
 }

@@ -10,15 +10,19 @@ namespace StockAPI.Consumers
     {
         private readonly ApplicationDbContext _context;
         private readonly ISendEndpointProvider _sendEndpointProvider;
+        private readonly ISendEndpoint _senderEndpoint;
 
         public OrderCreateEventConsumer(ApplicationDbContext context, ISendEndpointProvider sendEndpointProvider = null)
         {
             _context = context;
             _sendEndpointProvider = sendEndpointProvider;
+            _senderEndpoint =  _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}")).Result; //deneyecegiz
         }
 
         public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
         {
+            ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}"));
+
             foreach (var orderItem in context.Message.OrderItems)
             {
                 var stock = await _context.Stocks.FirstOrDefaultAsync(s => s.ProductId == orderItem.ProductId && s.Count > orderItem.Count);
@@ -28,16 +32,13 @@ namespace StockAPI.Consumers
                     stock.Count -= orderItem.Count;
                     stock.CreatedDate = DateTime.UtcNow;
 
-                    _context.Stocks.Update(stock);
+                    //_context.Stocks.Update(stock);
+                    await _context.SaveChangesAsync();
 
-                    ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.Payment_StockReservedEventQueue}"));
 
-                    StockReservedEvent stockReservedEvent = new()
+                    StockReservedEvent stockReservedEvent = new(context.Message.CorrelationId)
                     {
-                        BuyerId = context.Message.BuyerId,
-                        OrderId = context.Message.OrderId,
-                        OrderItems = context.Message.OrderItems,
-                        TotalPrice = context.Message.TotalPrice
+                        OrderItems = context.Message.OrderItems
                     };
 
                     await sendEndpoint.Send(stockReservedEvent);
@@ -45,11 +46,9 @@ namespace StockAPI.Consumers
                 }
                 else
                 {
-                    ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.Order_StockNotReservedEventQueue}"));
 
-                    StockNotReservedEvent stockNotReservedEvent = new()
+                    StockNotReservedEvent stockNotReservedEvent = new(context.Message.CorrelationId)
                     {
-                        OrderId = context.Message.OrderId,
                         Message = "Stock miktari yetersiz"
                     };
 
@@ -58,7 +57,7 @@ namespace StockAPI.Consumers
                 }
             }
 
-            await _context.SaveChangesAsync();
+            
         }
     }
 }

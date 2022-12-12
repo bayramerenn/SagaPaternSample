@@ -4,24 +4,24 @@ using Shared.Events;
 
 namespace OrderAPI.Consumer
 {
-    public class PaymentCompletedEventConsumer : IConsumer<PaymentCompletedEvent>
+    public class OrderFailedEventConsumer : IConsumer<OrderFailedEvent>
     {
         private readonly ApplicationDbContext _context;
 
-        public PaymentCompletedEventConsumer(ApplicationDbContext context)
+        public OrderFailedEventConsumer(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task Consume(ConsumeContext<PaymentCompletedEvent> context)
+        public async Task Consume(ConsumeContext<OrderFailedEvent> context)
         {
             var order = await _context.Orders.FindAsync(context.Message.OrderId);
 
             if (order != null)
             {
-                order.OrderStatus = Modes.Enums.OrderStatus.Completed;
+                order.OrderStatus = Modes.Enums.OrderStatus.Fail;
                 await _context.SaveChangesAsync();
-                Console.WriteLine("Islem completed alinmistir");
+                Console.WriteLine(context.Message.Message);
             }
         }
     }
