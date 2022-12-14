@@ -18,7 +18,7 @@ namespace PaymentAPI.Consumers
             //process
             ISendEndpoint sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMQSettings.StateMachine}"));
 
-            bool paymentState = false;
+            bool paymentState = true;
 
             if (paymentState)
             {
